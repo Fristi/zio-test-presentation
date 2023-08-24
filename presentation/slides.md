@@ -35,7 +35,6 @@ layout: 'intro'
 
 <div class="leading-8 opacity-80">
 Functional Programming 🥑<br>
-Freelance full-stack developer at DHL<br>
 Company site: <a href="https://vectos.net" target="_blank">Vectos</a>.<br>
 </div>
 
@@ -327,6 +326,32 @@ class: 'text-center pb-5'
 
 # ZIO Test
 
+### Classic assertions
+
+```scala
+test("Check assertions") {
+  assert(Right(Some(2)))(Assertion.isRight(Assertion.isSome(Assertion.equalTo(2))))
+}
+```
+
+- Discoverable by the `Assertion` object
+- Composes well 
+  - Operations like `&&` and `||`
+  - Generic combinator design e.g. `def exists[A](assertion: Assertion[A]): Assertion[Iterable[A]]`
+
+### Smart assertions
+
+```scala
+test("sum"){
+  assertTrue(1 + 1 == 2)
+}
+```
+
+It uses the `assertTrue` function, which uses _macro_ under the hood.
+---
+
+# ZIO Test
+
 ### First test with TestConsole
 
 ```scala
@@ -367,7 +392,11 @@ def makeTest(a: Int, b: Int)(expected: Int): Spec[Any, Nothing] =
 def makeTests: ZIO[Any, Throwable, List[Spec[Any, Nothing]]] =
   loadTestData.map { testData =>
     testData.map { case ((a, b), expected) => makeTest(a, b)(expected) }
-  }
+  } 
+
+object AdditionSpec extends ZIOSpecDefault {
+  override def spec = suite("add")(makeTests)
+}
 ```
 
 ---
