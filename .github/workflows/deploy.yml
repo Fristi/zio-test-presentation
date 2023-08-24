@@ -6,7 +6,6 @@ jobs:
     defaults:
       run:
         working-directory: ./presentation
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
@@ -18,11 +17,10 @@ jobs:
         run: npm run build
   deploy:
     needs: build
-    runs-on: ubuntu-latest
     steps:
       - name: Deploy pages
         uses: crazy-max/ghaction-github-pages@v2
         with:
-          build_dir: dist
+          build_dir: ./presentation/dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
