@@ -3,8 +3,9 @@ on: push
 
 jobs:
   build:
-    run:
-      working-directory: ./presentation
+    defaults:
+      run:
+        working-directory: ./presentation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
