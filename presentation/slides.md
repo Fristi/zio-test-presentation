@@ -620,4 +620,4 @@ class: 'text-center pb-5'
 
 # Thank You!
 
-[https://github.com/Fristi/zio-test](https://github.com/Fristi/zio-test)
+[https://github.com/Fristi/zio-test-workshop](https://github.com/Fristi/zio-test-workshop)

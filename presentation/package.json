@@ -1,7 +1,7 @@
 {
   "scripts": {
     "dev": "slidev",
-    "build": "slidev build --base /bazel-deck"
+    "build": "slidev build --base /zio-test-workshop"
   },
   "dependencies": {
     "@slidev/cli": "^0.28.5",
