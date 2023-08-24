@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "dev": "slidev",
+    "build": "slidev build --base /bazel-deck"
+  },
+  "dependencies": {
+    "@slidev/cli": "^0.28.5",
+    "@slidev/theme-default": "^0.21.1",
+    "slidev-theme-purplin": "^1.1.0"
+  },
+  "devDependencies": {
+    "@iconify-json/logos": "^1.0.4",
+    "@iconify-json/twemoji": "^1.0.2"
+  }
+}

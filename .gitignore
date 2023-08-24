@@ -24,16 +24,9 @@ project/project/
 
 # if you are here to add your IDE's files please read this instead:
 # https://stackoverflow.com/questions/7335420/global-git-ignore#22885996
-website/node_modules
-website/.docusaurus
-website/build
-website/docs
-website/static/api*
-website/i18n/en.json
-website/yarn.lock
-website/package-lock.json
-website/static/api
-website/yarn-error.log
-website/ecosystem-sidebar.js
+presentation/node_modules
+presentation/.docusaurus
+presentation/build
+presentation/dist
 .bsp/
 .vscode
