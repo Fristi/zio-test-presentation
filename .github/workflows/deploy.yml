@@ -1,10 +1,10 @@
 name: Deploy pages
 on: push
-defaults:
-  run:
-    working-directory: ./presentation
+
 jobs:
-  deploy:
+  build:
+    run:
+      working-directory: ./presentation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -15,10 +15,12 @@ jobs:
         run: npm install
       - name: Build
         run: npm run build
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy pages
         uses: crazy-max/ghaction-github-pages@v2
         with:
           build_dir: presentation/dist
-          absolute_build_dir: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
