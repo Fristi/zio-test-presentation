@@ -5,10 +5,10 @@ highlighter: shiki
 colorSchema: light
 ---
 
-# zio-test
+# zio-test and ScalaTest
 
 <p text="2xl" class="!leading-8">
-How to use zio-test?
+What's zio-test and how does it compare to ScalaTest?
 </p>
 
 <div class="abs-br mx-14 my-12 flex">
@@ -58,7 +58,7 @@ Company site: <a href="https://vectos.net" target="_blank">Vectos</a>.<br>
 
 - ZIO Recap
 - ZIO Test features
-- ZIO Test v.s. Scalatest
+- ZIO Test and Scalatest
 
 </v-clicks>
 
@@ -509,6 +509,10 @@ Number of tests executed: 2
 
 ```scala
 
+trait Diff[A] {
+  def diff(x: A, y: A): DiffResult
+}
+
 sealed trait DiffResult
 object DiffResult {
   case class Nested(label: String, fields: List[(Option[String], DiffResult)]) extends DiffResult
@@ -516,10 +520,6 @@ object DiffResult {
   case class Removed(oldValue: Any) extends DiffResult
   case class Added(newValue: Any) extends DiffResult
   case class Identical(value: Any) extends DiffResult
-}
-
-trait Diff[A] {
-  def diff(x: A, y: A): DiffResult
 }
 ```
 
@@ -546,7 +546,7 @@ implicit def anyValDiff[A <: AnyVal]: Diff[A] = anyDiff[A]
 
 ---
 
-# ZIO Test
+# ZIO Test - Diff
 
 ### Derive `Diff` for case classes and algebraic data types
 
@@ -567,78 +567,169 @@ object DiffSpec extends ZIOSpecDefault{
 }
 ```
 
+#### Shows where it's different
+
 ```text
 Diff -expected +obtained
 Point(
   x = 3 → 1
 )
 ```
----
-layout: center
-class: 'text-center pb-5'
----
-
-# ZIO Test versus Scalatest
 
 ---
 
-# ZIO Test versus Scalatest
+# ScalaTest - Diff
 
-|                       | ZIO test        | Scalatest                  |
-|-----------------------|-----------------|----------------------------|
-| Property-based-test   | ✅               | scalacheck                 |
-| Test aspects          | ✅               | ad-hoc                     |
-| Layer suppport        | ✅               | ❌                          |
-| Readable diffs        | ✅               | ❌                          |
-| Mocking               | zio-mock        | intergration modules       |
+```scala
+case class Point(x: Int, y: Int)
+
+import org.scalatest.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+
+class ScalaTestDiffSpec extends AnyWordSpec with Matchers {
+  "Point" should {
+    "show difference" in {
+      Point(1, 2) shouldBe Point(2, 3)
+    }
+  }
+}
+```
+
+#### Dump's the whole case class
+
+```text
+Point(1, 2) was not equal to Point(2, 3)
+Expected :Point(2, 3)
+Actual   :Point(1, 2)
+```
+
+---
+
+# ZIO Test and Scalatest
+
+### Retry - Scalatest
+
+```scala
+
+import org.scalatest._
+import tagobjects.Retryable
+
+class SetSpec extends FlatSpec with Retries {
+
+  override def withFixture(test: NoArgTest) = {
+    if (isRetryable(test))
+      withRetry { super.withFixture(test) }
+    else
+      super.withFixture(test)
+  }
+
+  "An empty Set" should "have size 0" taggedAs(Retryable) in {
+    assert(Set.empty.size === 0)
+  }
+}
+```
+
+---
+
+# ZIO Test and Scalatest
+
+### Retry - ZIO
+
+```scala
+test("repeating a test based on the scheduler to ensure it passes every time") {
+  ZIO.debug("repeating successful tests")
+    .map(_ => assertTrue(true))
+} @@ TestAspect.repeat(Schedule.recurs(5))
+```
+
+---
+
+# ZIO Test and Scalatest
+
+### Option checking - Scalatest
+
+DSL which you need to read and learn about
+
+```scala
+maybeValue shouldBe Some("Hello") // Checks for Some("Hello")
+maybeValue shouldNot be(None)     // Checks that it's not None
+```
+
+```scala
+import org.scalatest.OptionValues._
+import org.scalatest.matchers.should.Matchers._
+
+maybeValue.value should be("Hello")  // Access the value and test it
+```
+
+---
+
+# ZIO Test and Scalatest
+
+### Option checking - zio-test
+
+#### Smart assertions
+
+```scala
+assertTrue(maybeValue == Some(3))
+```
+
+#### Classic assertions
+
+```scala
+assert(maybeValue)(Assertion.isNone)
+assert(maybeValue)(Assertion.isSome(Assertions.isGreaterThan(0)))
+```
+
+---
+
+# ZIO Test and Scalatest
+
+|                      | ZIO test        | Scalatest                  |
+|----------------------|-----------------|----------------------------|
+| Property-based-test  | ✅               | scalacheck                 |
+| Test aspects         | ✅               | ad-hoc                     |
+| Layer support        | ✅               | ❌                          |
+| Readable diffs       | ✅               | ❌                          |
+| Mocking              | zio-mock        | intergration modules       |
 | Different test styles | define yourself | `FunSpec`, `FlatSpec`, etc |
-| Tagging               | ✅               | ✅                          |
-| Custom assertions     | ✅               | ✅                          |
-| Assert macros         | ✅               | ✅                          |
-
----
-
-# ZIO Test versus Scalatest
-
-|               | ZIO test        | Scalatest                  |
-|---------------|-----------------|----------------------------|
+| Custom assertions    | ✅               | ✅                          |
+| Assert macros        | ✅               | ✅                          |
 | Async testing | ✅               | via trait `Async{XXX}Spec` |
-| Fixtures      | define yourself | Special syntax             |
-
-
 
 ---
 
-# ZIO Test versus Scalatest
+# ZIO Test and Scalatest
 
 ### Test aspects
 
-|                | ZIO test               | Scalatest                           |
-|----------------|------------------------|-------------------------------------|
-| `beforeAll`    | `TestAspect.beforeAll` | via trait `BeforeAll`               |
-| `afterAll`     | `TestAspect.afterAll`  | via trait `AfterAll`                |
-| Async timeouts | `TestAspect.timeout`   | via overriding `PatienceConfig`     |
-| Flaky tests    | `TestAspect.flaky`     | No support for it                   |
+|                | ZIO test               | Scalatest                      |
+|----------------|------------------------|--------------------------------|
+| `beforeAll`    | `TestAspect.beforeAll` | via trait `BeforeAll`          |
+| `afterAll`     | `TestAspect.afterAll`  | via trait `AfterAll`           |
+| Retries        | `TestAspect.retry`     | via trait `Retries`    |
+| Async timeouts | `TestAspect.timeout`   | via overriding `PatienceConfig` |
+| Flaky tests    | `TestAspect.flaky`     | No support for it              |
 | Ignoring tests | `TestAspect.ignore`    | Special method and syntax `ignored` |
-| Fiber dumps    | `TestAspect.diagnose`  | No support for it                   |
+| Fiber dumps    | `TestAspect.diagnose`  | No support for it              |
 
 ---
 
-# ZIO Test versus Scalatest
+# ZIO Test and Scalatest
 
 ### Conclusion
 
 <v-clicks>
 
-- ZIO test has strong integration with `ZLayer`
+- ZIO test has **strong** integration with `ZLayer` 
 - ZIO test has support for ZIO services like `Console`
-- In scalatest stacking traits gives you async tests, specific matchers, etcetra
+- In scalatest the trait jungle gives you async tests, specific matchers, etcetra
 - Cross-cutting concerns are defined in ZIO by test aspects, while scalatest is **ad-hoc** (clunky)
 - ZIO test comes with **property based testing** and **diffing** out of the box
 - Scalatest comes with fixtures and test styles
-  - These concepts you need to learn
+  - These concepts you need to _learn_ or _fight_ over
   - While in ZIO test you just use functions
-
+- Scalatest _lacks_ support for **flaky tests** and **fiber dumps** 
 
 </v-clicks>
 
