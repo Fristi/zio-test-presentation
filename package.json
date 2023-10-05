@@ -1,7 +1,7 @@
 {
   "scripts": {
     "dev": "slidev",
-    "build": "slidev build"
+    "build": "slidev build --base /zio-test-presentation"
   },
   "dependencies": {
     "@slidev/cli": "^0.28.5",
